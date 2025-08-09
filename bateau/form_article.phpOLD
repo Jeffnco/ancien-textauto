@@ -1,0 +1,100 @@
+<form id="webhookForm" class="formN">
+  <div>
+    <label for="mot_cles_principal">Mot clé principal :</label>
+    <input type="text" id="mot_cles_principal" name="mot_cles_principal" required>
+  </div>
+  <div>
+    <label for="titre">Titre :</label>
+    <input type="text" id="titre" name="titre" required>
+  </div>
+  <div>
+    <label for="description">Description :</label>
+    <textarea id="description" name="description" required></textarea>
+  </div>
+  <div>
+    <label for="mots_cles">Mots clés :</label>
+    <textarea id="mots_cles" name="mots_cles" required></textarea>
+  </div>
+  <div>
+    <label for="instructions">Instructions :</label>
+    <textarea id="instructions" name="instructions" required></textarea>
+  </div>
+  <div>
+    <!-- Sélection des Personas -->
+    <label for="persona">Choisir un persona :</label>
+    <select id="persona" name="persona">
+        <option value="">Sélectionner un persona</option>
+        <?php foreach ($personas_list as $persona): ?>
+            <option value="<?= htmlspecialchars($persona['Title']) ?>">
+                <?= htmlspecialchars($persona['Title']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
+    <!-- Champ caché pour envoyer l'ID du persona -->
+    <input type="hidden" id="id_persona" name="id_persona">
+  </div>
+  <div>
+    <!-- Sélection des Projets -->
+    <label for="projets">Choisir un projet :</label>
+    <select id="projets" name="projets">
+        <option value="">Sélectionner un projet</option>
+        <?php foreach ($projets_list as $projet): ?>
+            <option value="<?= htmlspecialchars($projet['Projet']) ?>">
+                <?= htmlspecialchars($projet['Projet']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+
+    <!-- Champ caché pour envoyer l'ID du projet -->
+    <input type="hidden" id="id_projet" name="id_projet">
+  </div>
+  <button type="submit">Envoyer</button>
+</form>
+
+<script>
+// Met à jour l'input caché avec l'ID du persona sélectionné
+document.getElementById("persona").addEventListener("change", function() {
+    document.getElementById("id_persona").value = this.value;
+});
+
+// Met à jour l'input caché avec l'ID du projet sélectionné
+document.getElementById("projets").addEventListener("change", function() {
+    document.getElementById("id_projet").value = this.value;
+});
+
+// Gestion de la soumission du formulaire
+document.getElementById("webhookForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Empêche l'envoi classique du formulaire
+
+    let formData = {
+        mot_cles_principal: document.getElementById("mot_cles_principal").value,
+        titre: document.getElementById("titre").value,
+        description: document.getElementById("description").value,
+        mots_cles: document.getElementById("mots_cles").value,
+        instructions: document.getElementById("instructions").value,
+        persona: document.getElementById("persona").value,
+        projets: document.getElementById("projets").value
+    };
+
+    console.log("📢 Données envoyées :", JSON.stringify(formData, null, 2));
+
+    fetch("https://n8n.evolu8.fr/webhook/ffa2d9b1-1a69-4cf6-adba-1c8fad3999b6", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("✅ Réponse du Webhook :", data);
+        showMessage("Article envoyé avec succès !", true);
+        this.reset();
+    })
+    .catch(error => {
+        console.error("❌ Erreur lors de l'envoi :", error);
+        showMessage("Erreur lors de l'envoi de l'article.", false);
+    });
+});
+</script>
